@@ -9,15 +9,17 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "react": "latest",
-    "react-dom": "latest",
-    "next": "latest",
+    "@tidbcloud/serverless": "^0.2.0",
     "class-variance-authority": "latest",
     "clsx": "latest",
+    "date-fns": "latest",
     "lucide-react": "latest",
+    "mysql2": "^3.16.1",
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest",
     "tailwind-merge": "latest",
-    "tailwindcss-animate": "latest",
-    "date-fns": "latest"
+    "tailwindcss-animate": "latest"
   },
   "devDependencies": {
     "@types/node": "latest",

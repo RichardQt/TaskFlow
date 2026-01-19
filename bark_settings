@@ -1,0 +1,32 @@
+功能参数
+url
+// 点击推送将跳转到url的地址（发送时，URL参数需要编码）
+https://api.day.app/yourkey/百度网址?url=https://www.baidu.com 
+group
+// 指定推送消息分组，可在历史记录中按分组查看推送。
+https://api.day.app/yourkey/需要分组的推送?group=groupName
+icon (仅 iOS15 或以上支持）
+// 指定推送消息图标
+https://api.day.app/yourkey/需要自定义图标的推送?icon=http://day.app/assets/images/avatar.jpg
+sound
+// 指定推送消息的铃声
+https://api.day.app/yourkey/sound?sound=alarm
+call
+// 重复播放铃声30s
+https://api.day.app/yourkey/call?call=1
+ciphertext
+// 推送加密的密文
+https://api.day.app/yourkey/ciphertext?ciphertext=
+时效性通知
+// 设置时效性通知
+https://api.day.app/yourkey/时效性通知?level=timeSensitive
+
+// 可选参数值
+// active：不设置时的默认值，系统会立即亮屏显示通知。
+// timeSensitive：时效性通知，可在专注状态下显示通知。
+// passive：仅将通知添加到通知列表，不会亮屏提醒
+重要警告
+// 设置时效性通知
+https://api.day.app/yourkey/时效性通知?level=critical
+
+重要警告会忽略静音和勿扰模式，始终播放通知声音并在屏幕上显示。

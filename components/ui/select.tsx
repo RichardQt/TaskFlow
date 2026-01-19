@@ -121,7 +121,7 @@ const SelectItem = ({
     onValueChange(value)
     // Extract text content from children for display
     const label = typeof children === 'string' ? children : 
-      (children as React.ReactElement)?.props?.children?.[1] || value
+      ((children as React.ReactElement)?.props as { children?: React.ReactNode[] })?.children?.[1] || value
     setDisplayLabel(typeof label === 'string' ? label : value)
     setOpen(false)
   }
