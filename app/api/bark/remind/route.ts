@@ -48,7 +48,7 @@ export async function POST() {
         bark_sound as sound,
         bark_icon as icon,
         bark_group as \`group\`,
-        DATE_FORMAT(bark_last_reminded, '%Y-%m-%d') as lastRemindedDate
+        bark_last_reminded as lastReminded
       FROM tasks 
       WHERE bark_enabled = TRUE 
         AND completed = FALSE 
@@ -70,22 +70,41 @@ export async function POST() {
 		const results = [];
 
 		for (const task of tasks) {
-			// 跳过今天已经提醒过的任务
-			if (task.lastRemindedDate === today) {
-				console.log(`[Bark Remind] 任务 "${task.title}" 今天已提醒过，跳过`);
-				continue;
-			}
-
-			// 解析任务到期日期
-			const taskDueDate = new Date(task.dueDate + "T00:00:00");
-			const todayDate = new Date(today + "T00:00:00");
-			const daysDiff = Math.round(
-				(taskDueDate.getTime() - todayDate.getTime()) / (1000 * 60 * 60 * 24),
-			);
-
 			// 解析提醒时间
 			const [remindHour, remindMinute] = task.remindTime.split(":").map(Number);
 			const remindTotalMinutes = remindHour * 60 + remindMinute;
+
+			// 检查是否在10分钟内已经提醒过（避免重复提醒）
+			if (task.lastReminded) {
+				// 将数据库时间字符串转换为北京时间对象进行比较
+				// task.lastReminded 格式如 "2026-01-20 07:20:07" 或 "2026-01-20T07:20:07+08:00"
+				let lastRemindedTime: Date;
+				if (task.lastReminded.includes('+08:00') || task.lastReminded.includes('T')) {
+					// 如果已经包含时区信息或ISO格式，直接解析
+					lastRemindedTime = new Date(task.lastReminded);
+				} else {
+					// 如果是普通格式，手动添加北京时区
+					lastRemindedTime = new Date(task.lastReminded.replace(' ', 'T') + '+08:00');
+				}
+				
+				const timeDiff = now.getTime() - lastRemindedTime.getTime();
+				const minutesDiff = timeDiff / (1000 * 60);
+
+				// 如果距离上次提醒不到10分钟，跳过
+				if (minutesDiff < 10) {
+					console.log(
+						`[Bark Remind] 任务 "${task.title}" 在 ${minutesDiff.toFixed(1)} 分钟前已提醒过，跳过`,
+					);
+					continue;
+				}
+			}
+
+			// 解析任务到期日期（使用北京时区）
+			const taskDueDate = new Date(task.dueDate + "T00:00:00+08:00");
+			const todayDate = new Date(today + "T00:00:00+08:00");
+			const daysDiff = Math.round(
+				(taskDueDate.getTime() - todayDate.getTime()) / (1000 * 60 * 60 * 24),
+			);
 			const remindBefore = task.remindBefore || 0;
 
 			// 计算实际应该提醒的时间（考虑提前提醒）
