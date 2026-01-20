@@ -182,7 +182,7 @@ export function TaskForm({
 						/>
 					</div>
 
-					<div className="grid grid-cols-2 gap-3">
+					<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 						<div>
 							<label className="text-xs text-muted-foreground mb-1.5 block">
 								优先级
@@ -240,7 +240,7 @@ export function TaskForm({
 						</div>
 					</div>
 
-					<div className="grid grid-cols-2 gap-3">
+					<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 						<div>
 							<label className="text-xs text-muted-foreground mb-1.5 block">
 								项目
@@ -342,7 +342,7 @@ export function TaskForm({
 						{barkEnabled && showBarkSettings && (
 							<div className="space-y-3 pt-2 border-t">
 								{/* 提醒时间 - 必填 */}
-								<div className="grid grid-cols-2 gap-3">
+								<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 									<div>
 										<label className="text-xs text-muted-foreground mb-1.5 flex items-center gap-1">
 											<Clock className="h-3 w-3" />
