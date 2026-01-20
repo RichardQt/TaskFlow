@@ -47,7 +47,7 @@ const DialogContent = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "relative w-full max-w-lg rounded-xl border bg-card p-6 shadow-lg animate-fade-in",
+      "relative w-full max-w-lg rounded-xl border bg-card p-6 shadow-lg animate-fade-in max-h-[85vh] overflow-y-auto",
       className
     )}
     onClick={(e) => e.stopPropagation()}

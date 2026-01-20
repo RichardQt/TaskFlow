@@ -127,14 +127,14 @@ export function TaskForm({
 		// 构建 Bark 设置对象
 		const barkSettings: TaskBarkSettings | undefined = barkEnabled
 			? {
-					enabled: true,
-					remindTime: barkRemindTime || undefined,
-					remindBefore: barkRemindBefore,
-					critical: barkCritical,
-					sound: barkSound || undefined,
-					icon: barkIcon || undefined,
-					group: barkGroup || undefined,
-				}
+				enabled: true,
+				remindTime: barkRemindTime || undefined,
+				remindBefore: barkRemindBefore,
+				critical: barkCritical,
+				sound: barkSound || undefined,
+				icon: barkIcon || undefined,
+				group: barkGroup || undefined,
+			}
 			: { enabled: false, critical: false };
 
 		onSubmit({
