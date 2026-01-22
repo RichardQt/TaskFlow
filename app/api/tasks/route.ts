@@ -37,6 +37,7 @@ export async function GET() {
         bark_enabled as barkEnabled,
         bark_remind_time as barkRemindTime,
         bark_remind_before as barkRemindBefore,
+		bark_repeat_interval as barkRepeatInterval,
         bark_critical as barkCritical,
         bark_sound as barkSound,
         bark_icon as barkIcon,
@@ -62,6 +63,7 @@ export async function GET() {
 				enabled: Boolean(task.barkEnabled),
 				remindTime: task.barkRemindTime || undefined,
 				remindBefore: task.barkRemindBefore ?? 0,
+				remindRepeatInterval: task.barkRepeatInterval ?? 0,
 				critical: Boolean(task.barkCritical),
 				sound: task.barkSound || undefined,
 				icon: task.barkIcon || undefined,
@@ -101,8 +103,8 @@ export async function POST(request: Request) {
 
 		await db.execute(
 			`
-      INSERT INTO tasks (id, title, description, priority, due_date, project_id, recurring, created_at, completed, bark_enabled, bark_remind_time, bark_remind_before, bark_critical, bark_sound, bark_icon, bark_group)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO tasks (id, title, description, priority, due_date, project_id, recurring, created_at, completed, bark_enabled, bark_remind_time, bark_remind_before, bark_repeat_interval, bark_critical, bark_sound, bark_icon, bark_group)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?, ?, ?, ?, ?, ?, ?)
     `,
 			[
 				id,
@@ -116,6 +118,7 @@ export async function POST(request: Request) {
 				barkSettings?.enabled || false,
 				barkSettings?.remindTime || null,
 				barkSettings?.remindBefore ?? 0,
+				barkSettings?.remindRepeatInterval ?? 0,
 				barkSettings?.critical || false,
 				barkSettings?.sound || null,
 				barkSettings?.icon || null,

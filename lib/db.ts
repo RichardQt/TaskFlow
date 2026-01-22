@@ -58,6 +58,7 @@ export async function initDatabase() {
         bark_enabled BOOLEAN DEFAULT FALSE,
         bark_remind_time VARCHAR(10),
         bark_remind_before INT DEFAULT 0,
+		bark_repeat_interval INT DEFAULT 0,
         bark_critical BOOLEAN DEFAULT FALSE,
         bark_sound VARCHAR(50),
         bark_icon VARCHAR(500),
@@ -89,6 +90,13 @@ export async function initDatabase() {
 		try {
 			await db.execute(
 				`ALTER TABLE tasks ADD COLUMN bark_remind_before INT DEFAULT 0`,
+			);
+		} catch (e) {
+			/* 字段可能已存在 */
+		}
+		try {
+			await db.execute(
+				`ALTER TABLE tasks ADD COLUMN bark_repeat_interval INT DEFAULT 0`,
 			);
 		} catch (e) {
 			/* 字段可能已存在 */

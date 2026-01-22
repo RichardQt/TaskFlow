@@ -7,6 +7,7 @@ export interface TaskBarkSettings {
 	enabled: boolean; // 是否启用 Bark 提醒
 	remindTime?: string; // 提醒时间 (HH:mm 格式)
 	remindBefore?: number; // 提前多少分钟提醒 (0, 5, 10, 15, 30, 60)
+	remindRepeatInterval?: number; // 每隔多少分钟重复提醒（0=不重复）
 	critical: boolean; // 是否开启重要警告（忽略静音和勿扰模式）
 	sound?: string; // 铃声选择
 	icon?: string; // 自定义图标
@@ -24,6 +25,17 @@ export const REMIND_BEFORE_OPTIONS = [
 	{ value: 60, label: "提前1小时" },
 	{ value: 120, label: "提前2小时" },
 	{ value: 1440, label: "提前1天" },
+];
+
+// 重复提醒间隔选项
+export const REMIND_REPEAT_OPTIONS = [
+	{ value: 0, label: "不重复" },
+	{ value: 5, label: "每5分钟" },
+	{ value: 10, label: "每10分钟" },
+	{ value: 15, label: "每15分钟" },
+	{ value: 30, label: "每30分钟" },
+	{ value: 60, label: "每1小时" },
+	{ value: 120, label: "每2小时" },
 ];
 
 // Bark 可用铃声列表

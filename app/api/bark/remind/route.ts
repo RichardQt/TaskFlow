@@ -44,6 +44,7 @@ export async function POST() {
         DATE_FORMAT(due_date, '%Y-%m-%d') as dueDate,
         bark_remind_time as remindTime,
         bark_remind_before as remindBefore,
+		bark_repeat_interval as repeatInterval,
         bark_critical as critical,
         bark_sound as sound,
         bark_icon as icon,
@@ -85,12 +86,13 @@ export async function POST() {
 			// 解析提醒时间
 			const [remindHour, remindMinute] = task.remindTime.split(":").map(Number);
 			const remindTotalMinutes = remindHour * 60 + remindMinute;
+			const repeatInterval = Number(task.repeatInterval ?? 0);
 
-			// 检查是否在10分钟内已经提醒过（避免重复提醒）
+			// 解析上次提醒时间（用于去重）
+			let lastRemindedTime: Date | null = null;
+			let minutesDiff: number | null = null;
 			if (task.lastReminded) {
-				// 使用真实的 UTC 时间进行比较
 				const realNow = new Date();
-				let lastRemindedTime: Date;
 
 				console.log(
 					`[Bark Remind] 任务 "${task.title}" lastReminded 原始值:`,
@@ -99,40 +101,23 @@ export async function POST() {
 					task.lastReminded instanceof Date ? `(Date对象)` : "",
 				);
 
-				// task.lastReminded 可能是字符串或 Date 对象
 				if (typeof task.lastReminded === "string") {
-					// 数据库返回的是北京时间字符串（如 "2026-01-20 08:36:03"）
-					// 需要将空格替换为T，并添加北京时区偏移
 					const normalizedStr = task.lastReminded.replace(" ", "T");
 					lastRemindedTime = new Date(normalizedStr + "+08:00");
 				} else if (task.lastReminded instanceof Date) {
-					// TiDB serverless 驱动返回 Date 对象时，会把数据库中的北京时间当作 UTC 解析
-					// 例如：数据库存储 "2026-01-22 15:05:51" (北京时间)
-					// 驱动返回的 Date 对象是 2026-01-22T15:05:51.000Z (UTC)，比实际晚了8小时
-					// 所以我们需要减去8小时来得到正确的 UTC 时间戳
 					const wrongUtcTime = task.lastReminded.getTime();
 					const correctUtcTime = wrongUtcTime - 8 * 60 * 60 * 1000;
 					lastRemindedTime = new Date(correctUtcTime);
 				} else {
-					// 其他情况，尝试直接转换
 					lastRemindedTime = new Date(task.lastReminded);
 				}
 
-				// 使用真实的 UTC 时间戳进行比较
 				const timeDiff = realNow.getTime() - lastRemindedTime.getTime();
-				const minutesDiff = timeDiff / (1000 * 60);
+				minutesDiff = timeDiff / (1000 * 60);
 
 				console.log(
 					`[Bark Remind] 任务 "${task.title}" 解析后: ${lastRemindedTime.toISOString()}, 当前UTC: ${realNow.toISOString()}, 时差: ${minutesDiff.toFixed(1)} 分钟`,
 				);
-
-				// 如果距离上次提醒不到10分钟，跳过
-				if (minutesDiff >= 0 && minutesDiff < 10) {
-					console.log(
-						`[Bark Remind] 任务 "${task.title}" 在 ${minutesDiff.toFixed(1)} 分钟前已提醒过，跳过`,
-					);
-					continue;
-				}
 			}
 
 			// 解析任务到期日期（使用北京时区）
@@ -183,6 +168,7 @@ export async function POST() {
 						crossDayMinutes < 1440 &&
 						currentTotalMinutes >= crossDayMinutes
 					) {
+						actualRemindMinutes = crossDayMinutes;
 						shouldRemind = true;
 						console.log(
 							`[Bark Remind] 任务 "${task.title}" 明天到期，今天跨天提醒`,
@@ -198,6 +184,29 @@ export async function POST() {
 						console.log(
 							`[Bark Remind] 任务 "${task.title}" ${daysDiff}天后到期，提前提醒`,
 						);
+					}
+				}
+			}
+
+			// 去重：根据配置的重复间隔决定是否跳过
+			if (shouldRemind && lastRemindedTime && minutesDiff !== null) {
+				if (repeatInterval > 0) {
+					if (minutesDiff >= 0 && minutesDiff < repeatInterval) {
+						console.log(
+							`[Bark Remind] 任务 "${task.title}" 在 ${minutesDiff.toFixed(1)} 分钟前已提醒过，重复间隔 ${repeatInterval} 分钟，跳过`,
+						);
+						continue;
+					}
+				} else {
+					const remindWindowStart = new Date(`${today}T00:00:00+08:00`);
+					const remindWindowTime = new Date(
+						remindWindowStart.getTime() + actualRemindMinutes * 60 * 1000,
+					);
+					if (lastRemindedTime.getTime() >= remindWindowTime.getTime()) {
+						console.log(
+							`[Bark Remind] 任务 "${task.title}" 已在提醒窗口后提醒过（不重复），跳过`,
+						);
+						continue;
 					}
 				}
 			}

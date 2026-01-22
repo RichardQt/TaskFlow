@@ -23,6 +23,7 @@ import {
 	TaskBarkSettings,
 	BARK_SOUNDS,
 	REMIND_BEFORE_OPTIONS,
+	REMIND_REPEAT_OPTIONS,
 } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -70,6 +71,7 @@ export function TaskForm({
 	const [barkEnabled, setBarkEnabled] = React.useState(false);
 	const [barkRemindTime, setBarkRemindTime] = React.useState("");
 	const [barkRemindBefore, setBarkRemindBefore] = React.useState(0);
+	const [barkRepeatInterval, setBarkRepeatInterval] = React.useState(0);
 	const [barkCritical, setBarkCritical] = React.useState(false);
 	const [barkSound, setBarkSound] = React.useState<string>("");
 	const [barkIcon, setBarkIcon] = React.useState("");
@@ -90,6 +92,9 @@ export function TaskForm({
 			setBarkEnabled(editingTask.barkSettings?.enabled || false);
 			setBarkRemindTime(editingTask.barkSettings?.remindTime || "");
 			setBarkRemindBefore(editingTask.barkSettings?.remindBefore ?? 0);
+			setBarkRepeatInterval(
+				editingTask.barkSettings?.remindRepeatInterval ?? 0,
+			);
 			setBarkCritical(editingTask.barkSettings?.critical || false);
 			setBarkSound(editingTask.barkSettings?.sound || "");
 			setBarkIcon(editingTask.barkSettings?.icon || "");
@@ -106,6 +111,7 @@ export function TaskForm({
 			setBarkEnabled(false);
 			setBarkRemindTime("");
 			setBarkRemindBefore(0);
+			setBarkRepeatInterval(0);
 			setBarkCritical(false);
 			setBarkSound("");
 			setBarkIcon("");
@@ -130,6 +136,7 @@ export function TaskForm({
 					enabled: true,
 					remindTime: barkRemindTime || undefined,
 					remindBefore: barkRemindBefore,
+					remindRepeatInterval: barkRepeatInterval,
 					critical: barkCritical,
 					sound: barkSound || undefined,
 					icon: barkIcon.trim() || undefined,
@@ -379,6 +386,31 @@ export function TaskForm({
 											</SelectContent>
 										</Select>
 									</div>
+								</div>
+								<div>
+									<label className="text-xs text-muted-foreground mb-1.5 block">
+										重复提醒间隔
+									</label>
+									<Select
+										value={String(barkRepeatInterval)}
+										onValueChange={(v) =>
+											setBarkRepeatInterval(Number(v))
+										}
+									>
+										<SelectTrigger>
+											<SelectValue placeholder="选择重复间隔" />
+										</SelectTrigger>
+										<SelectContent>
+											{REMIND_REPEAT_OPTIONS.map((option) => (
+												<SelectItem
+													key={option.value}
+													value={String(option.value)}
+												>
+													{option.label}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
 								</div>
 								{!barkRemindTime && (
 									<p className="text-xs text-destructive">

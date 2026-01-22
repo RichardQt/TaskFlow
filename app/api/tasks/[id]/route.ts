@@ -67,6 +67,8 @@ export async function PUT(
 			values.push(barkSettings.remindTime || null);
 			updates.push("bark_remind_before = ?");
 			values.push(barkSettings.remindBefore ?? 0);
+			updates.push("bark_repeat_interval = ?");
+			values.push(barkSettings.remindRepeatInterval ?? 0);
 			updates.push("bark_critical = ?");
 			values.push(barkSettings.critical || false);
 			updates.push("bark_sound = ?");
