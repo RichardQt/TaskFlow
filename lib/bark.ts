@@ -48,6 +48,12 @@ export async function sendBarkNotification(
 		if (options?.level) params.level = options.level;
 		if (options?.call) params.call = "1";
 
+		console.log(`[Bark] 发送通知到 ${url}`, {
+			title,
+			body: body.substring(0, 50),
+			params,
+		});
+
 		// 使用 POST 请求发送
 		const response = await fetch(url, {
 			method: "POST",

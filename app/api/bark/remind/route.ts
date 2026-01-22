@@ -66,6 +66,18 @@ export async function POST() {
 			});
 		}
 
+		// 打印任务详情用于调试
+		tasks.forEach((task) => {
+			console.log(`[Bark Remind] 任务详情:`, {
+				id: task.id,
+				title: task.title,
+				icon: task.icon,
+				group: task.group,
+				sound: task.sound,
+				critical: task.critical,
+			});
+		});
+
 		const remindedTasks: string[] = [];
 		const results = [];
 
@@ -76,22 +88,31 @@ export async function POST() {
 
 			// 检查是否在10分钟内已经提醒过（避免重复提醒）
 			if (task.lastReminded) {
-				// 将数据库时间字符串转换为北京时间对象进行比较
-				// task.lastReminded 格式如 "2026-01-20 07:20:07" 或 "2026-01-20T07:20:07+08:00"
+				// 数据库 DATETIME 字段存储的是北京时间（不带时区信息）
+				// 读取时需要明确指定为北京时间（+08:00）
 				let lastRemindedTime: Date;
-				if (task.lastReminded.includes('+08:00') || task.lastReminded.includes('T')) {
-					// 如果已经包含时区信息或ISO格式，直接解析
-					lastRemindedTime = new Date(task.lastReminded);
+
+				// task.lastReminded 可能是字符串或 Date 对象
+				if (typeof task.lastReminded === "string") {
+					// 数据库返回的是北京时间字符串（如 "2026-01-20 08:36:03"）
+					// 需要将空格替换为T，并添加北京时区偏移
+					const normalizedStr = task.lastReminded.replace(" ", "T");
+					lastRemindedTime = new Date(normalizedStr + "+08:00");
 				} else {
-					// 如果是普通格式，手动添加北京时区
-					lastRemindedTime = new Date(task.lastReminded.replace(' ', 'T') + '+08:00');
+					// 如果是 Date 对象，假设它已经被正确解析
+					lastRemindedTime = new Date(task.lastReminded);
 				}
-				
+
+				// now 是通过 getBeijingTime() 获取的北京时间
 				const timeDiff = now.getTime() - lastRemindedTime.getTime();
 				const minutesDiff = timeDiff / (1000 * 60);
 
+				console.log(
+					`[Bark Remind] 任务 "${task.title}" 上次提醒: ${task.lastReminded}, 解析为: ${lastRemindedTime.toISOString()}, 时差: ${minutesDiff.toFixed(1)} 分钟`,
+				);
+
 				// 如果距离上次提醒不到10分钟，跳过
-				if (minutesDiff < 10) {
+				if (minutesDiff >= 0 && minutesDiff < 10) {
 					console.log(
 						`[Bark Remind] 任务 "${task.title}" 在 ${minutesDiff.toFixed(1)} 分钟前已提醒过，跳过`,
 					);
@@ -193,6 +214,14 @@ export async function POST() {
 					options.icon = task.icon;
 				}
 
+				console.log(`[Bark Remind] 任务 "${task.title}" 的 Bark 选项:`, {
+					group: task.group,
+					sound: task.sound,
+					icon: task.icon,
+					critical: task.critical,
+					options,
+				});
+
 				try {
 					const result = await sendBarkNotifications(
 						barkUrls,
@@ -223,9 +252,10 @@ export async function POST() {
 			}
 		}
 
-		// 更新已提醒任务的 last_reminded 时间
+		// 更新已提醒任务的 last_reminded 时间（存储为 DATETIME，MySQL 会转换为 UTC）
 		if (remindedTasks.length > 0) {
 			const nowStr = toBeijingISOString();
+			console.log(`[Bark Remind] 更新提醒时间: ${nowStr}`);
 			for (const taskId of remindedTasks) {
 				await db.execute(
 					"UPDATE tasks SET bark_last_reminded = ? WHERE id = ?",
