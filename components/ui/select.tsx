@@ -90,7 +90,7 @@ const SelectContent = ({ children, className }: { children: React.ReactNode; cla
   return (
     <div
       className={cn(
-        "absolute z-50 mt-1 w-full rounded-lg border bg-popover p-1 shadow-md animate-fade-in",
+        "absolute z-50 mt-2 w-full min-w-[8rem] overflow-hidden rounded-xl border border-border/60 bg-popover/95 p-1.5 shadow-xl shadow-black/5 animate-fade-in backdrop-blur-sm",
         className
       )}
     >
@@ -109,7 +109,7 @@ const SelectItem = ({
   className?: string
 }) => {
   const { value: selectedValue, onValueChange, setOpen, setDisplayLabel } = useSelectContext()
-  
+
   // Set display label when this item is selected
   React.useEffect(() => {
     if (selectedValue === value && typeof children === 'string') {
@@ -120,7 +120,7 @@ const SelectItem = ({
   const handleClick = () => {
     onValueChange(value)
     // Extract text content from children for display
-    const label = typeof children === 'string' ? children : 
+    const label = typeof children === 'string' ? children :
       ((children as React.ReactElement)?.props as { children?: React.ReactNode[] })?.children?.[1] || value
     setDisplayLabel(typeof label === 'string' ? label : value)
     setOpen(false)
@@ -131,12 +131,16 @@ const SelectItem = ({
       type="button"
       onClick={handleClick}
       className={cn(
-        "relative flex w-full cursor-pointer select-none items-center rounded-md py-1.5 px-2 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground",
-        selectedValue === value && "bg-accent text-accent-foreground",
+        "relative flex w-full cursor-pointer select-none items-center rounded-lg py-2.5 px-3 text-sm outline-none transition-all duration-200 hover:bg-muted/80 mb-1 last:mb-0",
+        "font-medium group",
+        selectedValue === value && "bg-accent/10 text-accent font-semibold hover:bg-accent/15",
         className
       )}
     >
       {children}
+      {selectedValue === value && (
+        <span className="absolute right-3 flex h-1.5 w-1.5 rounded-full bg-accent animate-in fade-in zoom-in duration-300" />
+      )}
     </button>
   )
 }

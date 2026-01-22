@@ -42,12 +42,7 @@ export const REMIND_REPEAT_OPTIONS = [
 export const BARK_SOUNDS = [
 	{ value: "alarm", label: "闹钟" },
 	{ value: "bell", label: "铃声" },
-	{ value: "birdsong", label: "鸟鸣" },
-	{ value: "bloom", label: "绽放" },
-	{ value: "chime", label: "风铃" },
-	{ value: "choo", label: "嘟嘟" },
-	{ value: "descent", label: "下降" },
-	{ value: "electronic", label: "电子" },
+	{ value: "birdsong", label: "鸟鸣" }
 ];
 
 export interface Task {
