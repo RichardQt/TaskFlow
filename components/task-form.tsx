@@ -308,6 +308,7 @@ export function TaskForm({
 									id="bark-enabled"
 									checked={barkEnabled}
 									onCheckedChange={(checked) => {
+										if (!dueDate) return;
 										setBarkEnabled(checked === true);
 										if (checked) setShowBarkSettings(true);
 									}}
@@ -316,15 +317,17 @@ export function TaskForm({
 								<label
 									htmlFor="bark-enabled"
 									className={cn(
-										"text-sm font-medium flex items-center gap-2 cursor-pointer",
-										!dueDate && "text-muted-foreground",
+										"text-sm font-medium flex items-center gap-2 select-none transition-colors",
+										!dueDate
+											? "cursor-not-allowed text-muted-foreground opacity-70"
+											: "cursor-pointer",
 									)}
 								>
 									<Bell className="h-4 w-4" />
 									Bark 提醒
 									{!dueDate && (
-										<span className="text-xs text-muted-foreground">
-											（需先设置截止日期）
+										<span className="text-xs text-muted-foreground ml-1">
+											(需设置截止日期)
 										</span>
 									)}
 								</label>
@@ -347,143 +350,158 @@ export function TaskForm({
 						</div>
 
 						{barkEnabled && showBarkSettings && (
-							<div className="space-y-3 pt-2 border-t">
-								{/* 提醒时间 - 必填 */}
-								<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+							<div className="space-y-4 pt-3 border-t animate-in slide-in-from-top-2 duration-200">
+								{/* 提醒时间设置 */}
+								<div className="space-y-3">
 									<div>
-										<label className="text-xs text-muted-foreground mb-1.5 flex items-center gap-1">
-											<Clock className="h-3 w-3" />
+										<label className="text-xs font-medium text-foreground mb-1.5 flex items-center gap-1">
+											<Clock className="h-3.5 w-3.5 text-primary" />
 											提醒时间 <span className="text-destructive">*</span>
 										</label>
 										<Input
 											type="time"
 											value={barkRemindTime}
 											onChange={(e) => setBarkRemindTime(e.target.value)}
-											className="w-full"
+											className="w-full font-mono"
 											required={barkEnabled}
 										/>
 									</div>
-									<div>
-										<label className="text-xs text-muted-foreground mb-1.5 block">
-											提前提醒
-										</label>
-										<Select
-											value={String(barkRemindBefore)}
-											onValueChange={(v) => setBarkRemindBefore(Number(v))}
-										>
-											<SelectTrigger>
-												<SelectValue placeholder="选择提前时间" />
-											</SelectTrigger>
-											<SelectContent>
-												{REMIND_BEFORE_OPTIONS.map((option) => (
-													<SelectItem
-														key={option.value}
-														value={String(option.value)}
-													>
-														{option.label}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
+
+									<div className="grid grid-cols-2 gap-3">
+										<div>
+											<label className="text-xs text-muted-foreground mb-1.5 block">
+												提前提醒
+											</label>
+											<Select
+												value={String(barkRemindBefore)}
+												onValueChange={(v) => setBarkRemindBefore(Number(v))}
+											>
+												<SelectTrigger className="h-9">
+													<SelectValue placeholder="选择提前时间" />
+												</SelectTrigger>
+												<SelectContent>
+													{REMIND_BEFORE_OPTIONS.map((option) => (
+														<SelectItem
+															key={option.value}
+															value={String(option.value)}
+														>
+															{option.label}
+														</SelectItem>
+													))}
+												</SelectContent>
+											</Select>
+										</div>
+										<div>
+											<label className="text-xs text-muted-foreground mb-1.5 block">
+												重复提醒
+											</label>
+											<Select
+												value={String(barkRepeatInterval)}
+												onValueChange={(v) => setBarkRepeatInterval(Number(v))}
+											>
+												<SelectTrigger className="h-9">
+													<SelectValue placeholder="选择重复间隔" />
+												</SelectTrigger>
+												<SelectContent>
+													{REMIND_REPEAT_OPTIONS.map((option) => (
+														<SelectItem
+															key={option.value}
+															value={String(option.value)}
+														>
+															{option.label}
+														</SelectItem>
+													))}
+												</SelectContent>
+											</Select>
+										</div>
 									</div>
 								</div>
-								<div>
-									<label className="text-xs text-muted-foreground mb-1.5 block">
-										重复提醒间隔
-									</label>
-									<Select
-										value={String(barkRepeatInterval)}
-										onValueChange={(v) =>
-											setBarkRepeatInterval(Number(v))
-										}
-									>
-										<SelectTrigger>
-											<SelectValue placeholder="选择重复间隔" />
-										</SelectTrigger>
-										<SelectContent>
-											{REMIND_REPEAT_OPTIONS.map((option) => (
-												<SelectItem
-													key={option.value}
-													value={String(option.value)}
-												>
-													{option.label}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-								</div>
+
 								{!barkRemindTime && (
-									<p className="text-xs text-destructive">
+									<p className="text-xs text-destructive flex items-center gap-1">
+										<AlertTriangle className="h-3 w-3" />
 										请设置提醒时间，否则无法发送提醒
 									</p>
 								)}
 
-								{/* 重要警告 */}
-								<div className="flex items-center gap-2">
+								{/* 个性化设置 */}
+								<div className="space-y-3 pt-1">
+									<div className="grid grid-cols-2 gap-3">
+										<div>
+											<label className="text-xs text-muted-foreground mb-1.5 flex items-center gap-1">
+												<Volume2 className="h-3 w-3" />
+												铃声
+											</label>
+											<Select value={barkSound} onValueChange={setBarkSound}>
+												<SelectTrigger className="h-9">
+													<SelectValue placeholder="默认铃声" />
+												</SelectTrigger>
+												<SelectContent>
+													<SelectItem value="">默认铃声</SelectItem>
+													{BARK_SOUNDS.map((sound) => (
+														<SelectItem key={sound.value} value={sound.value}>
+															{sound.label}
+														</SelectItem>
+													))}
+												</SelectContent>
+											</Select>
+										</div>
+										<div>
+											<label className="text-xs text-muted-foreground mb-1.5 flex items-center gap-1">
+												<FolderOpen className="h-3 w-3" />
+												消息分组
+											</label>
+											<Input
+												placeholder="TaskFlow"
+												value={barkGroup}
+												onChange={(e) => setBarkGroup(e.target.value)}
+												className="h-9"
+											/>
+										</div>
+									</div>
+
+									<div>
+										<label className="text-xs text-muted-foreground mb-1.5 flex items-center gap-1">
+											<Image className="h-3 w-3" />
+											自定义图标
+										</label>
+										<Input
+											placeholder="https://example.com/icon.png"
+											value={barkIcon}
+											onChange={(e) => setBarkIcon(e.target.value)}
+											className="h-9"
+										/>
+									</div>
+								</div>
+
+								{/* 重要警告开关 */}
+								<div className="flex items-center gap-2 p-2 rounded-md bg-secondary/30 border border-transparent hover:border-border transition-colors">
 									<Checkbox
 										id="bark-critical"
 										checked={barkCritical}
 										onCheckedChange={(checked) =>
 											setBarkCritical(checked === true)
 										}
+										className="data-[state=checked]:bg-destructive data-[state=checked]:border-destructive"
 									/>
 									<label
 										htmlFor="bark-critical"
-										className="text-sm flex items-center gap-2 cursor-pointer"
+										className="flex-1 text-sm flex items-center gap-2 cursor-pointer select-none"
 									>
-										<AlertTriangle className="h-4 w-4 text-destructive" />
-										重要警告
+										<span
+											className={cn(
+												barkCritical && "font-medium text-destructive",
+											)}
+										>
+											重要警告
+										</span>
 										<span className="text-xs text-muted-foreground">
-											（忽略静音和勿扰模式）
+											(忽略静音/勿扰)
 										</span>
 									</label>
-								</div>
-
-								{/* 铃声选择 */}
-								<div>
-									<label className="text-xs text-muted-foreground mb-1.5 flex items-center gap-1">
-										<Volume2 className="h-3 w-3" />
-										铃声
-									</label>
-									<Select value={barkSound} onValueChange={setBarkSound}>
-										<SelectTrigger>
-											<SelectValue placeholder="选择铃声（默认）" />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="">默认铃声</SelectItem>
-											{BARK_SOUNDS.map((sound) => (
-												<SelectItem key={sound.value} value={sound.value}>
-													{sound.label}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-								</div>
-
-								{/* 自定义图标 */}
-								<div>
-									<label className="text-xs text-muted-foreground mb-1.5 flex items-center gap-1">
-										<Image className="h-3 w-3" />
-										自定义图标
-									</label>
-									<Input
-										placeholder="输入图标 URL（可选）"
-										value={barkIcon}
-										onChange={(e) => setBarkIcon(e.target.value)}
-									/>
-								</div>
-
-								{/* 消息分组 */}
-								<div>
-									<label className="text-xs text-muted-foreground mb-1.5 flex items-center gap-1">
-										<FolderOpen className="h-3 w-3" />
-										消息分组
-									</label>
-									<Input
-										placeholder="输入分组名称（默认: TaskFlow）"
-										value={barkGroup}
-										onChange={(e) => setBarkGroup(e.target.value)}
-									/>
+									{barkCritical && (
+										<AlertTriangle className="h-4 w-4 text-destructive animate-pulse" />
+									)}
 								</div>
 							</div>
 						)}
