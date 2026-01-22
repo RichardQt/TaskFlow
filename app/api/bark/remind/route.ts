@@ -186,6 +186,21 @@ export async function POST() {
 						);
 					}
 				}
+			} else if (daysDiff < 0) {
+				// 已过期的任务
+				// 如果设置了重复提醒，或者是"不重复"但在今天尚未提醒过（每日提醒一次过期）
+				shouldRemind = true;
+				// 对于过期任务，如果是不重复模式，我们希望它每天在这个时间点提醒一次
+				// 所以 actualRemindMinutes 保持为 remindTotalMinutes 即可
+				if (repeatInterval === 0) {
+					console.log(
+						`[Bark Remind] 任务 "${task.title}" 已过期 ${Math.abs(daysDiff)} 天，执行每日提醒检查`,
+					);
+				} else {
+					console.log(
+						`[Bark Remind] 任务 "${task.title}" 已过期 ${Math.abs(daysDiff)} 天，执行重复提醒检查`,
+					);
+				}
 			}
 
 			// 去重：根据配置的重复间隔决定是否跳过
